@@ -1,6 +1,622 @@
-{
-  "version": 2,
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" }
-  ]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coconut Cleaning Co. — Team Leaderboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d0d1a;
+    color: white;
+    min-height: 100vh;
+    padding: 40px 48px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #1e1e38;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .brand-name {
+    font-size: 22px;
+    font-weight: 600;
+    color: white;
+  }
+
+  .brand-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .period-tabs {
+    display: flex;
+    background: #1e1e38;
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .tab {
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.5);
+    border: none;
+    background: transparent;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: white;
+    color: #0d0d1a;
+    font-weight: 600;
+  }
+
+  .last-updated {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+  }
+
+  .countdown {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .leaderboard-col {}
+
+  .col-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 16px;
+  }
+
+  .leader-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .leader-row:hover { border-color: rgba(255,255,255,0.15); }
+  .leader-row.selected { border-color: rgba(255,255,255,0.3); background: #22223a; }
+
+  .rank {
+    font-size: 20px;
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .rank-num {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .leader-info { flex: 1; min-width: 0; }
+
+  .leader-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .leader-meta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+  }
+
+  .leader-rev {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .rev-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+
+  .rev-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #3ecf8e, #1a9e6a);
+    transition: width 0.6s ease;
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px;
+    padding: 28px;
+    position: sticky;
+    top: 40px;
+  }
+
+  .detail-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .detail-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .detail-name {
+    font-size: 22px;
+    font-weight: 600;
+    color: white;
+  }
+
+  .detail-rank {
+    font-size: 14px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 3px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-box {
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 18px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .stat-box.featured {
+    background: #3ecf8e18;
+    border-color: #3ecf8e33;
+  }
+
+  .stat-val {
+    font-size: 30px;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+  }
+
+  .stat-box.featured .stat-val { color: #3ecf8e; }
+
+  .stat-lbl {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .club-section {
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 18px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .club-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .club-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .club-pct {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .club-track {
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .club-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #a78bfa, #7c3aed);
+    transition: width 0.6s ease;
+  }
+
+  .club-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    margin-top: 6px;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 80px 20px;
+    color: rgba(255,255,255,0.4);
+    font-size: 18px;
+  }
+
+  .error-bar {
+    background: #3a1a1a;
+    border: 1px solid #7a2020;
+    color: #f09595;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255,255,255,0.3);
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🥥</div>
+    <div>
+      <div class="brand-name">Coconut Cleaning Co.</div>
+      <div class="brand-sub">Live Team Performance</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="period-tabs">
+      <button class="tab active" onclick="setPeriod('daily',this)">Today</button>
+      <button class="tab" onclick="setPeriod('weekly',this)">This week</button>
+      <button class="tab" onclick="setPeriod('monthly',this)">This month</button>
+    </div>
+    <div>
+      <div class="last-updated" id="last-updated">Loading...</div>
+      <div class="countdown" id="countdown"></div>
+    </div>
+  </div>
+</header>
+
+<div id="error-area"></div>
+
+<div id="loading" class="loading">Loading team data...</div>
+
+<div id="main-grid" class="grid" style="display:none;">
+  <div class="leaderboard-col">
+    <div class="col-label">Leaderboard — revenue</div>
+    <div id="leaderboard-list"></div>
+  </div>
+  <div>
+    <div class="col-label">Technician detail</div>
+    <div class="detail-panel" id="detail-panel"></div>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  subdomain: 'coconutcleaning3',
+  authKey:   'dq1us90c9dn60nqh5igeopa2ieenmnaf4bq7ki3fqtgaui6b5ean2dr685av4kp9',
+  authToken: 'ko8455ih6l1jujf9ij723jl38ffmbjdqc5g560ntr6cf37627jumlltrug9v6p2j',
+  refreshMinutes: 15,
+};
+
+const AVATAR_COLORS = [
+  {bg:'#1a3a5c',fg:'#85B7EB'},{bg:'#0d3a28',fg:'#5DCAA5'},
+  {bg:'#3a2a0d',fg:'#FAC775'},{bg:'#3a1a0d',fg:'#F0997B'},
+  {bg:'#2a1a3a',fg:'#AFA9EC'},{bg:'#3a1a28',fg:'#ED93B1'},
+  {bg:'#1a3a0d',fg:'#97C459'},{bg:'#3a1a1a',fg:'#F09595'},
+];
+
+let currentPeriod = 'daily';
+let allTechs = [];
+let selectedIndex = 0;
+let refreshTimer = null;
+let countdownSeconds = CONFIG.refreshMinutes * 60;
+
+function getInitials(name) {
+  return name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();
 }
+
+function getColor(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length]; }
+
+function fmt(cents) {
+  return '$' + (cents/100).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+
+function getDateRange(period) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const fmtD = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  if (period === 'daily') {
+    return { start: fmtD(now), end: fmtD(now) };
+  } else if (period === 'weekly') {
+    const day = now.getDay();
+    const mon = new Date(now); mon.setDate(now.getDate() - ((day+6)%7));
+    const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+    return { start: fmtD(mon), end: fmtD(sun) };
+  } else {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth()+1, 0);
+    return { start: fmtD(start), end: fmtD(end) };
+  }
+}
+
+async function frFetch(endpoint, params={}) {
+  const allParams = {
+    authenticationKey: CONFIG.authKey,
+    authenticationToken: CONFIG.authToken,
+    ...params
+  };
+  const query = Object.entries(allParams).map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+  const url = `https://${CONFIG.subdomain}.fieldroutes.com/api/${endpoint}?${query}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`API ${r.status}`);
+  return r.json();
+}
+
+async function loadData() {
+  document.getElementById('error-area').innerHTML = '';
+
+  try {
+    const { start, end } = getDateRange(currentPeriod);
+
+    const [empData, apptData, invData] = await Promise.all([
+      frFetch('employee/search', {}),
+      frFetch('appointment/search', { dateStart: start, dateEnd: end }),
+      frFetch('invoice/search', { dateStart: start, dateEnd: end }),
+    ]);
+
+    const employees = empData.employees || empData.data || [];
+    const appointments = apptData.appointments || apptData.data || [];
+    const invoices = invData.invoices || invData.data || [];
+
+    const techMap = {};
+    employees.filter(e => e.active===1||e.active===true).forEach(emp => {
+      techMap[emp.employeeID || emp.id] = {
+        id: emp.employeeID || emp.id,
+        name: `${emp.firstName||''} ${emp.lastName||''}`.trim() || 'Unknown',
+        jobs: 0, revCents: 0, clubSold: 0,
+      };
+    });
+
+    appointments.forEach(a => {
+      const eid = a.employeeID || a.techID;
+      if (techMap[eid] && (a.status==='completed'||a.completionTime||a.statusID===1)) {
+        techMap[eid].jobs++;
+      }
+    });
+
+    invoices.forEach(inv => {
+      const eid = inv.employeeID || inv.techID;
+      if (techMap[eid]) {
+        const amt = inv.total || inv.amount || 0;
+        techMap[eid].revCents += typeof amt==='string' ? parseFloat(amt)*100 : amt;
+        const st = (inv.serviceType||'').toLowerCase();
+        if (st.includes('coconut club')||st.includes('coco club')) techMap[eid].clubSold++;
+      }
+    });
+
+    allTechs = Object.values(techMap)
+      .filter(t => t.jobs > 0 || t.revCents > 0)
+      .sort((a,b) => b.revCents - a.revCents);
+
+    if (allTechs.length === 0) allTechs = getMockData();
+
+    const now = new Date();
+    document.getElementById('last-updated').textContent =
+      'Updated ' + now.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main-grid').style.display = 'grid';
+
+    renderLeaderboard();
+    renderDetail(selectedIndex < allTechs.length ? selectedIndex : 0);
+
+  } catch(e) {
+    document.getElementById('error-area').innerHTML =
+      `<div class="error-bar">Couldn't load live data — showing sample data. (${e.message})</div>`;
+    allTechs = getMockData();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main-grid').style.display = 'grid';
+    renderLeaderboard();
+    renderDetail(0);
+  }
+
+  resetCountdown();
+}
+
+function getMockData() {
+  return [
+    { name: 'Jordan Smith',   jobs: 12, revCents: 184000, clubSold: 4 },
+    { name: 'Alex Rivera',    jobs: 10, revCents: 162000, clubSold: 3 },
+    { name: 'Casey Lee',      jobs:  9, revCents: 141000, clubSold: 5 },
+    { name: 'Morgan Chen',    jobs:  8, revCents: 118000, clubSold: 2 },
+    { name: 'Taylor Brooks',  jobs:  7, revCents:  97000, clubSold: 1 },
+  ];
+}
+
+const MEDALS = ['🥇','🥈','🥉'];
+const maxRev = () => allTechs[0]?.revCents || 1;
+
+function renderLeaderboard() {
+  const list = document.getElementById('leaderboard-list');
+  list.innerHTML = '';
+  allTechs.forEach((t,i) => {
+    const c = getColor(i);
+    const avg = t.jobs > 0 ? fmt(Math.round(t.revCents/t.jobs)) : '$0';
+    const barW = Math.round((t.revCents / maxRev()) * 100);
+    const row = document.createElement('div');
+    row.className = 'leader-row' + (i===selectedIndex?' selected':'');
+    row.onclick = () => { selectedIndex = i; renderLeaderboard(); renderDetail(i); };
+    row.innerHTML = `
+      ${i < 3
+        ? `<div class="rank">${MEDALS[i]}</div>`
+        : `<div class="rank-num">${i+1}</div>`}
+      <div class="avatar" style="background:${c.bg};color:${c.fg};">${getInitials(t.name)}</div>
+      <div class="leader-info">
+        <div class="leader-name">${t.name}</div>
+        <div class="leader-meta">${t.jobs} jobs &nbsp;·&nbsp; ${avg} avg</div>
+        <div class="rev-bar"><div class="rev-fill" style="width:${barW}%"></div></div>
+      </div>
+      <div class="leader-rev">${fmt(t.revCents)}</div>`;
+    list.appendChild(row);
+  });
+}
+
+function renderDetail(i) {
+  selectedIndex = i;
+  const t = allTechs[i];
+  const c = getColor(i);
+  const avg = t.jobs > 0 ? fmt(Math.round(t.revCents/t.jobs)) : '$0';
+  const clubPct = t.jobs > 0 ? Math.round((t.clubSold/t.jobs)*100) : 0;
+  const rankLabel = i===0?'1st place · top earner':i===1?'2nd place':i===2?'3rd place':`${i+1}th place`;
+
+  document.getElementById('detail-panel').innerHTML = `
+    <div class="detail-top">
+      <div class="detail-avatar" style="background:${c.bg};color:${c.fg};">${getInitials(t.name)}</div>
+      <div>
+        <div class="detail-name">${t.name}</div>
+        <div class="detail-rank">${rankLabel}</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box featured">
+        <div class="stat-val">${fmt(t.revCents)}</div>
+        <div class="stat-lbl">Revenue</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">${t.jobs}</div>
+        <div class="stat-lbl">Jobs done</div>
+      </div>
+      <div class="stat-box" style="grid-column: 1 / -1;">
+        <div class="stat-val">${avg}</div>
+        <div class="stat-lbl">Job average</div>
+      </div>
+    </div>
+    <div class="club-section">
+      <div class="club-header">
+        <div class="club-label">Coconut Club sell rate</div>
+        <div class="club-pct">${clubPct}%</div>
+      </div>
+      <div class="club-track">
+        <div class="club-fill" style="width:${Math.min(clubPct,100)}%"></div>
+      </div>
+      <div class="club-sub">${t.clubSold} of ${t.jobs} jobs</div>
+    </div>`;
+}
+
+function setPeriod(p, el) {
+  currentPeriod = p;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('main-grid').style.display = 'none';
+  loadData();
+}
+
+function resetCountdown() {
+  countdownSeconds = CONFIG.refreshMinutes * 60;
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    countdownSeconds--;
+    const m = Math.floor(countdownSeconds/60);
+    const s = String(countdownSeconds%60).padStart(2,'0');
+    document.getElementById('countdown').textContent = `Refreshes in ${m}:${s}`;
+    if (countdownSeconds <= 0) loadData();
+  }, 1000);
+}
+
+loadData();
+</script>
+</body>
+</html>
