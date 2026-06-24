@@ -387,6 +387,7 @@ const CONFIG = {
   subdomain: 'coconutcleaning3',
   authKey:   'dq1us90c9dn60nqh5igeopa2ieenmnaf4bq7ki3fqtgaui6b5ean2dr685av4kp9',
   authToken: 'ko8455ih6l1jujf9ij723jl38ffmbjdqc5g560ntr6cf37627jumlltrug9v6p2j',
+  officeID: 3,
   refreshMinutes: 15,
 };
 
@@ -435,13 +436,22 @@ async function frFetch(endpoint, params={}) {
   const allParams = {
     authenticationKey: CONFIG.authKey,
     authenticationToken: CONFIG.authToken,
+    officeID: CONFIG.officeID,
     ...params
   };
-  const query = Object.entries(allParams).map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+  const query = Object.entries(allParams).map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
   const url = `https://${CONFIG.subdomain}.fieldroutes.com/api/${endpoint}?${query}`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`API ${r.status}`);
-  return r.json();
+  console.log('Fetching:', url);
+  let r;
+  try {
+    r = await fetch(url);
+  } catch(netErr) {
+    throw new Error(`Network error (possible CORS): ${netErr.message}`);
+  }
+  const text = await r.text();
+  console.log('Response:', r.status, text.slice(0,300));
+  if (!r.ok) throw new Error(`API ${r.status}: ${text.slice(0,200)}`);
+  try { return JSON.parse(text); } catch(e) { throw new Error(`Bad JSON: ${text.slice(0,200)}`); }
 }
 
 async function loadData() {
